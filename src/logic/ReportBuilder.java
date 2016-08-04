@@ -25,7 +25,7 @@ public class ReportBuilder{
 	
 	private DOCXworker dw;
 	
-	private boolean isBonus;
+	private boolean isSingles;
 	private boolean isRostov;
 	private boolean isCities;
 	private boolean isAddWords;
@@ -33,7 +33,7 @@ public class ReportBuilder{
 	private int lastBonusPos;
 	private int lastCitiesPos;
 	
-	private boolean isSepBonus;
+	private boolean isSepSingles;
 	private boolean isSepRostov;
 	private boolean isSepOther;
 	private boolean isSepAddw;
@@ -45,13 +45,13 @@ public class ReportBuilder{
 	public ReportBuilder(String sourceFileName, HashMap<String, String> values) {
 		//да, быдлокодю. НО СРОКИ!11!!
 		this.sourceFileName = sourceFileName;
-		this.isBonus = values.containsKey("isBonus");
+		this.isSingles = values.containsKey("isSingles");
 		this.isRostov = values.containsKey("isRostov");
 		this.isCities = values.containsKey("isCities");
 		this.isAddWords = values.containsKey("isAddWords");
 		this.lastBonusPos = Integer.valueOf(values.get("lastBonusPos"));
 		this.lastCitiesPos = Integer.valueOf(values.get("lastCitiesPos"));
-		this.isSepBonus = values.containsKey("isSepBonus");
+		this.isSepSingles = values.containsKey("isSepSingles");
 		this.isSepRostov = values.containsKey("isSepRostov");
 		this.isSepOther = values.containsKey("isSepOther");
 		this.isSepAddw = values.containsKey("isSepAddw");
@@ -73,7 +73,7 @@ public class ReportBuilder{
 			e.printStackTrace();
 		}
 
-		doBonus(isBonus);
+		doSingles(isSingles);
 		doRostov(isRostov);
 		doCities(isCities | isAddWords);
 		
@@ -93,7 +93,7 @@ public class ReportBuilder{
 	 * ДЕЛАТЬ БОНУС
 	 */
 
-	private void doBonus(boolean isNeed){
+	private void doSingles(boolean isNeed){
 		if(!isNeed)
 			return;
 		currentLine = csvReader.readLine();
@@ -118,14 +118,14 @@ public class ReportBuilder{
 		String bonusstring = "БОНУС: наличие позиций сайта по региональным запросам без указания города - показатель высокого качества проводимых мероприятий!";
 		Table bonus = Table.buildBestTable(bonuses, lastBonusPos, false, this.leaveEmpty, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
 		//для выгрузки в .docx
-		if(isSepBonus){
+		if(isSepSingles){
 			dw.insertNewTableWithTwoColumns(bonus, bonusstring, this.lastBonusPos);
 		}else{
 			dw.insertNewTable(bonus, bonusstring, this.lastBonusPos);
 		}
 		
 		
-		if(isSepBonus){
+		if(isSepSingles){
 			bonus = Table.buildBestTable(bonuses, lastBonusPos, true, this.leaveEmpty, this.isBestLineToTop);
 			//для выгрузки в .docx
 			dw.insertNewTableWithTwoColumns(bonus, "GOOGLE", this.lastBonusPos);

@@ -120,7 +120,7 @@ Boolean prices = (request.getParameter("prices") != null );
 		</div>
 		<div class="header"><h3>Настройки выгрузки</h3></div>
 		<div class="header"><h4>Таблицы</h4></div>
-		<div class="checkbox"><input type="checkbox" name="isBonus" checked>Бонус</div>
+		<div class="checkbox"><input type="checkbox" name="isSingles" checked>Фразы без добавлений</div>
 		<div class="checkbox"><input type="checkbox" name="isRostov" checked>Ростов-на-Дону</div>
 		<div class="checkbox"><input type="checkbox" name="isCities">Другие города</div>
 		<div class="checkbox"><input type="checkbox" name="isAddWords">Дополнительные слова</div>		
@@ -135,7 +135,7 @@ Boolean prices = (request.getParameter("prices") != null );
 		<%}else{ %>
 		<div class="header"><h3>Настройки выгрузки</h3></div>
 		<div class="header"><h4>Таблицы</h4></div>
-		<div class="checkbox"><input type="checkbox" name="isBonus" checked>Бонус | раздельно:<input type="checkbox" name="isSepBonus" checked></div>
+		<div class="checkbox"><input type="checkbox" name="isSingles" checked>Фразы без добавлений | раздельно:<input type="checkbox" name="isSepSingles" checked></div>
 		<div class="checkbox"><input type="checkbox" name="isRostov" checked>Ростов-на-Дону | раздельно:<input type="checkbox" name="isSepRostov"></div>
 		<div class="checkbox"><input type="checkbox" name="isCities">Другие города | раздельно:<input type="checkbox" name="isSepOther"></div>
 		<div class="checkbox"><input type="checkbox" name="isAddWords">Дополнительные слова | раздельно:<input type="checkbox" name="isSepAddw"></div>		

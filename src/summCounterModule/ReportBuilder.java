@@ -22,7 +22,7 @@ public class ReportBuilder{
 	
 	private DOCXworker dw;
 	
-	private boolean isBonus;
+	private boolean isSingles;
 	private boolean isRostov;
 	private boolean isCities;
 	private boolean isAddWords;
@@ -41,7 +41,7 @@ public class ReportBuilder{
 		this.csvFileName = csvFileName;
 		this.priceFileName = priceFileName;
 		
-		this.isBonus = values.containsKey("isBonus");
+		this.isSingles = values.containsKey("isSingles");
 		this.isRostov = values.containsKey("isRostov");
 		this.isCities = values.containsKey("isCities");
 		this.isAddWords = values.containsKey("isAddWords");
@@ -67,7 +67,7 @@ public class ReportBuilder{
 			e.printStackTrace();
 		}
 
-		doBonus(isBonus);
+		doSingles(isSingles);
 		doRostov(isRostov);
 		doCities(isCities | isAddWords);
 		
@@ -88,7 +88,7 @@ public class ReportBuilder{
 	 * ƒ≈À¿“‹ ¡ŒÕ”—
 	 */
 
-	private void doBonus(boolean isNeed){
+	private void doSingles(boolean isNeed){
 		if(!isNeed)
 			return;
 		currentLine = csvReader.readLine();

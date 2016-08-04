@@ -91,7 +91,7 @@ public class DOCXworker {
 		this.templateTable = (Tbl) tbl;
 		this.templateRow = (Tr) getAllElementFromObject(this.templateTable, Tr.class).get(1);
 		this.templateRow2 = (Tr) getAllElementFromObject(this.templateTable, Tr.class).get(2);	
-		this.templateEndRow = (Tr) getAllElementFromObject(this.templateTable, Tr.class).get(3);
+		this.templateEndRow = (Tr) XmlUtils.deepCopy((Tr) getAllElementFromObject(this.templateTable, Tr.class).get(3));
 	}
 	
 	
@@ -125,8 +125,11 @@ public class DOCXworker {
 				
 		}
 		removeFirstRow(newTbl);
+		Tr summRow = (Tr) XmlUtils.deepCopy(this.templateEndRow);
+		((Text)getAllElementFromObject(summRow, Text.class).get(1)).setValue("" + price);
+		newTbl.getContent().add(summRow);
 		
-		((Text)getAllElementFromObject(this.templateEndRow, Text.class).get(1)).setValue("" + price);
+		
 		
 		template.getMainDocumentPart().getContent().add(pTitle); //параграф с названием таблицы
 		template.getMainDocumentPart().getContent().add(factory.createP()); //пустой параграф-отступ
@@ -155,7 +158,6 @@ public class DOCXworker {
 		text.setValue("" + line.getPrice());
 		
 		reviewtable.getContent().add(reviewtable.getContent().size()-1, workingRow);
-		//reviewtable.getContent().add(workingRow);
 	}	
 	
 	//удалить таблицу-шаблон
@@ -167,8 +169,9 @@ public class DOCXworker {
 	
 	//удаляет первую и вторую строку таблицы(которая после заголовочной строки)
 	private void removeFirstRow(Tbl table){
+		table.getContent().remove(getAllElementFromObject(table.getParent(), Tr.class).get(2));
 		table.getContent().remove(getAllElementFromObject(table.getParent(), Tr.class).get(1));
-		table.getContent().remove(getAllElementFromObject(table.getParent(), Tr.class).get(1));
+		table.getContent().remove(getAllElementFromObject(table.getParent(), Tr.class).get(table.getContent().size()-1));
 	}
 	
 	public WordprocessingMLPackage getWMLP(){

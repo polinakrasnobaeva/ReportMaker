@@ -9,19 +9,19 @@ import javax.xml.bind.JAXBException;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
+import Utils.StaticStrings;
+import plain.BonusEntry;
 import plain.Line;
 import plain.Table;
 
 public class ReportBuilder{
 	
-
-
 	private String sourceFileName;
 
 	private Line currentLine;
 	private boolean eof = false; //end of file
 	private CSVReader csvReader;
-	private Table bonusForEtalon = null;
+	private Table singleForEtalon = null;
 	
 	private DOCXworker dw;
 	
@@ -42,6 +42,14 @@ public class ReportBuilder{
 	private boolean leaveEmpty;
 	private boolean isBestLineToTop;
 	
+	private ArrayList<BonusEntry> tablesForBonus = new ArrayList<>();
+	private boolean isSinglesBonus;
+	private boolean isRostovBonus;
+	private boolean isCitiesBonus;
+	private boolean isAddWordsBonus;
+	
+	private String promoRegion;
+	
 	public ReportBuilder(String sourceFileName, HashMap<String, String> values) {
 		//да, быдлокодю. НО СРОКИ!11!!
 		this.sourceFileName = sourceFileName;
@@ -58,6 +66,13 @@ public class ReportBuilder{
 		this.isNeedTableChecking = values.containsKey("isNeedTableChecking");
 		this.leaveEmpty = values.containsKey("leaveEmpty");
 		this.isBestLineToTop = values.containsKey("isBestLineToTop");
+		
+		this.isSinglesBonus = values.containsKey("isSinglesBonus");
+		this.isRostovBonus = values.containsKey("isRostovBonus");
+		this.isCitiesBonus = values.containsKey("isCitiesBonus");
+		this.isAddWordsBonus = values.containsKey("isAddWordsBonus");
+		
+		this.promoRegion = values.get("promoRegion");
 	}
 	
 	
@@ -76,6 +91,8 @@ public class ReportBuilder{
 		doSingles(isSingles);
 		doRostov(isRostov);
 		doCities(isCities | isAddWords);
+		
+		dw.insertBonusTables(tablesForBonus, StaticStrings.bonusString);
 		
 		csvReader.close();
 
@@ -99,10 +116,10 @@ public class ReportBuilder{
 		currentLine = csvReader.readLine();
 		checkEOF(); 
 	
-		bonusForEtalon = new Table();
+		singleForEtalon = new Table();
 		
 		while(!csvReader.isTableSeparator(currentLine.getString()) & !eof){ //пока следующая строка не разделитель
-			bonusForEtalon.addLine(currentLine);
+			singleForEtalon.addLine(currentLine);
 
 			currentLine = csvReader.readLine();
 			checkEOF();
@@ -112,24 +129,32 @@ public class ReportBuilder{
 		}
 		
 		
-		ArrayList<Table> bonuses = new ArrayList<Table>(); 
-		bonuses.add(bonusForEtalon);
+		ArrayList<Table> singles = new ArrayList<Table>(); 
+		singles.add(singleForEtalon);
 		
-		String bonusstring = "БОНУС: наличие позиций сайта по региональным запросам без указания города - показатель высокого качества проводимых мероприятий!";
-		Table bonus = Table.buildBestTable(bonuses, lastBonusPos, false, this.leaveEmpty, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
-		//для выгрузки в .docx
-		if(isSepSingles){
-			dw.insertNewTableWithTwoColumns(bonus, bonusstring, this.lastBonusPos);
+		if(this.isSinglesBonus){
+			Table single = Table.buildBestTable(singles, this.lastBonusPos, false, this.leaveEmpty, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
+			
+			if(isSepSingles){
+				this.tablesForBonus.add(new BonusEntry(single, true, StaticStrings.yandexString +  StaticStrings.singlesBonusString, this.lastBonusPos));
+				single = Table.buildBestTable(singles, this.lastBonusPos, true, this.leaveEmpty, this.isBestLineToTop);
+				this.tablesForBonus.add(new BonusEntry(single, true, StaticStrings.googleString +  StaticStrings.singlesBonusString, this.lastBonusPos));
+			}else{
+				this.tablesForBonus.add(new BonusEntry(single, false, StaticStrings.singlesBonusString, this.lastBonusPos));
+			}
 		}else{
-			dw.insertNewTable(bonus, bonusstring, this.lastBonusPos);
+			Table single = Table.buildBestTable(singles, this.lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
+			
+			if(isSepSingles){
+				dw.insertNewTableWithTwoColumns(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
+				single = Table.buildBestTable(singles, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
+				dw.insertNewTableWithTwoColumns(single, StaticStrings.googleString, this.lastCitiesPos, false);
+			}else{
+				dw.insertNewTable(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
+			}
 		}
 		
 		
-		if(isSepSingles){
-			bonus = Table.buildBestTable(bonuses, lastBonusPos, true, this.leaveEmpty, this.isBestLineToTop);
-			//для выгрузки в .docx
-			dw.insertNewTableWithTwoColumns(bonus, "GOOGLE", this.lastBonusPos);
-		}
 	}
 	
 	/**
@@ -169,27 +194,35 @@ public class ReportBuilder{
 		
 		//ПРОВЕРЯЕМ ЦЕЛОСТНОСТЬ РОСТОВА!
 		if(isNeedTableChecking){
-			if(this.bonusForEtalon != null){
-				TableFixer.checkTables(rostovTables, this.bonusForEtalon);
+			if(this.singleForEtalon != null){
+				TableFixer.checkTables(rostovTables, this.singleForEtalon);
 			}else{
 				System.out.println("Опция проверки целостности включена, но не было бонуса");
 			}
 		}
 		
-		
-		Table rostovTABLE = Table.buildBestTable(rostovTables, lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);
-		//для выгрузки в .docx
-		if(isSepRostov){
-			dw.insertNewTableWithTwoColumns(rostovTABLE, "С добавлением города: Ростов-на-Дону", lastCitiesPos);
+		if(this.isRostovBonus){
+			Table rostovTABLE = Table.buildBestTable(rostovTables, lastBonusPos, false, false, this.isBestLineToTop);
+			
+			if(isSepRostov){
+				this.tablesForBonus.add(new BonusEntry(rostovTABLE, true, StaticStrings.yandexString + StaticStrings.rostovBonusString, this.lastBonusPos));
+				rostovTABLE = Table.buildBestTable(rostovTables, this.lastBonusPos, true, false, this.isBestLineToTop);
+				this.tablesForBonus.add(new BonusEntry(rostovTABLE, true, StaticStrings.googleString + StaticStrings.rostovBonusString, this.lastBonusPos));
+			}else{
+				this.tablesForBonus.add(new BonusEntry(rostovTABLE, false, StaticStrings.rostovBonusString, this.lastBonusPos));
+			}
 		}else{
-			dw.insertNewTable(rostovTABLE, "С добавлением города: Ростов-на-Дону", lastCitiesPos);
+			Table rostovTABLE = Table.buildBestTable(rostovTables, lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);
+			
+			if(isSepRostov){
+				dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
+				rostovTABLE = Table.buildBestTable(rostovTables, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
+				dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.googleString, this.lastCitiesPos, false);
+			}else{
+				dw.insertNewTable(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
+			}
 		}
-		
-		if(isSepRostov){
-			rostovTABLE = Table.buildBestTable(rostovTables, lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
-			//для выгрузки в .docx
-			dw.insertNewTableWithTwoColumns(rostovTABLE, "GOOGLE", lastCitiesPos);
-		}
+				
 	}
 	
 	
@@ -236,8 +269,8 @@ public class ReportBuilder{
 		
 		//СОБРАЛИ ВСЕ ТАБЛИЦЫ В КОНЦЕ ФАЙЛА, ДУ СТАФФ
 		if(isNeedTableChecking){
-			if(this.bonusForEtalon != null){
-				TableFixer.checkTables(oneCityTables, this.bonusForEtalon);
+			if(this.singleForEtalon != null){
+				TableFixer.checkTables(oneCityTables, this.singleForEtalon);
 			}else{
 				System.out.println("Опция проверки целостности включена, но не было бонуса");
 			}
@@ -286,11 +319,20 @@ public class ReportBuilder{
 					oneCityTables.remove(city2);
 					i-=2;
 					
-					Table cityForReal = Table.buildBestTable(oneCityTable, lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);
-					realCities.add(cityForReal);
-					if(isSepOther){
-						Table cityForRealGoo = Table.buildBestTable(oneCityTable, lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
-						realCitiesGoo.add(cityForRealGoo);
+					if(this.isCitiesBonus){
+						Table cityForReal = Table.buildBestTable(oneCityTable, lastBonusPos, false, false, this.isBestLineToTop);
+						realCities.add(cityForReal);
+						if(isSepOther){
+							Table cityForRealGoo = Table.buildBestTable(oneCityTable, lastBonusPos, true, false, this.isBestLineToTop);
+							realCitiesGoo.add(cityForRealGoo);
+						}
+					}else{
+						Table cityForReal = Table.buildBestTable(oneCityTable, lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);
+						realCities.add(cityForReal);
+						if(isSepOther){
+							Table cityForRealGoo = Table.buildBestTable(oneCityTable, lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
+							realCitiesGoo.add(cityForRealGoo);
+						}
 					}
 					
 				}else{
@@ -313,17 +355,24 @@ public class ReportBuilder{
 			Table citiesToPrint = new Table(realCities);
 			
 			//для выгрузки в .docx
-			if(isSepOther){
-				dw.insertNewTableWithTwoColumns(citiesToPrint, "С добавлением других городов", lastCitiesPos);
+			if(this.isCitiesBonus){
+				if(isSepOther){
+					this.tablesForBonus.add(new BonusEntry(citiesToPrint, true, StaticStrings.yandexString + StaticStrings.citiesBonusString, this.lastBonusPos));
+					citiesToPrint = Table.buildBestTable(realCitiesGoo, this.lastBonusPos, true, false, this.isBestLineToTop);
+					this.tablesForBonus.add(new BonusEntry(citiesToPrint, true, StaticStrings.googleString + StaticStrings.citiesBonusString, this.lastBonusPos));
+				}else{
+					this.tablesForBonus.add(new BonusEntry(citiesToPrint, false, StaticStrings.citiesBonusString, this.lastBonusPos));
+				}
 			}else{
-				dw.insertNewTable(citiesToPrint, "С добавлением других городов", lastCitiesPos);
+				if(isSepOther){
+					dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
+					citiesToPrint = Table.buildBestTable(realCitiesGoo, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
+					dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.googleString, this.lastCitiesPos, false);
+				}else{
+					dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
+				}
 			}
-			
-			if(isSepOther){
-				citiesToPrint = new Table(realCitiesGoo);
-				//для выгрузки в .docx
-				dw.insertNewTableWithTwoColumns(citiesToPrint, "GOOGLE", lastCitiesPos);
-			}
+						
 		}
 		
 		if(addWordsAreFound){
@@ -345,17 +394,22 @@ public class ReportBuilder{
 				addWordsToPrintGoo.plusTable(addWord);
 			}
 		}
-		//для выгрузки в .docx
-		if(isSepAddw){
-			dw.insertNewTableWithTwoColumns(addWordsToPrint, "С доп. словами", lastCitiesPos);
+		if(this.isAddWordsBonus){
+			if(isSepAddw){
+				this.tablesForBonus.add(new BonusEntry(addWordsToPrint, true, StaticStrings.yandexString + StaticStrings.addWordsBonusString, this.lastBonusPos));
+				this.tablesForBonus.add(new BonusEntry(addWordsToPrintGoo, true, StaticStrings.googleString + StaticStrings.addWordsBonusString, this.lastBonusPos));
+			}else{
+				this.tablesForBonus.add(new BonusEntry(addWordsToPrint, false, StaticStrings.addWordsBonusString, this.lastBonusPos));
+			}
 		}else{
-			dw.insertNewTable(addWordsToPrint, "С доп. словами", lastCitiesPos);
+			if(isSepAddw){
+				dw.insertNewTableWithTwoColumns(addWordsToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
+				dw.insertNewTableWithTwoColumns(addWordsToPrintGoo, StaticStrings.googleString, this.lastCitiesPos, false);
+			}else{
+				dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.lastCitiesPos, false);
+			}
 		}
 
-		if(isSepAddw){
-			//для выгрузки в .docx
-		dw.insertNewTableWithTwoColumns(addWordsToPrintGoo, "GOOGLE", lastCitiesPos);
-		}
 	}
 	
 	

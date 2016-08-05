@@ -20,6 +20,8 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.PStyle;
 
+import Utils.StaticStrings;
+import plain.BonusEntry;
 import plain.Line;
 import plain.Table;
 
@@ -101,7 +103,7 @@ public class DOCXworker {
 	
 	
 	//добавление таблицы 
-	public void insertNewTable(Table table, String title, int lastPos){
+	public void insertNewTable(Table table, String title, int lastPos, boolean isBonus){
 		ObjectFactory factory = Context.getWmlObjectFactory();
 		
 	    P pTitle = factory.createP(); 
@@ -124,8 +126,9 @@ public class DOCXworker {
 		}
 		removeFirstRow(newTbl);
 		
-
-		template.getMainDocumentPart().getContent().add(pTitle); //параграф с названием таблицы
+		if(!isBonus){
+			template.getMainDocumentPart().getContent().add(pTitle); //параграф с названием таблицы
+		}
 		template.getMainDocumentPart().getContent().add(factory.createP()); //пустой параграф-отступ
 		template.getMainDocumentPart().getContent().add(newTbl);
 		template.getMainDocumentPart().getContent().add(factory.createP());
@@ -133,14 +136,15 @@ public class DOCXworker {
 	}
 	
 //добавление таблицы с двумя столбцами
-	public void insertNewTableWithTwoColumns(Table table, String title, int lastPos){
+	public void insertNewTableWithTwoColumns(Table table, String title, int lastPos, boolean isBonus){
 		ObjectFactory factory = Context.getWmlObjectFactory();
 		
-		boolean isGoogle = title.equals("GOOGLE");
+		boolean isGoogle = title.equals(StaticStrings.googleString);
 		
-		if(!isGoogle){
-		    P pTitle = factory.createP(); 
-		    
+		if(!isGoogle && !isBonus){
+
+	    	P pTitle = factory.createP(); 
+	    
 		    PPr pPr = factory.createPPr();
 		    PStyle pStyle = factory.createPPrBasePStyle();
 		    pStyle.setVal("Delta2");
@@ -151,8 +155,9 @@ public class DOCXworker {
 		    htxt.setValue(title);
 		    hrun.getContent().add(htxt);
 		    pTitle.getContent().add(hrun);
-			
-		    template.getMainDocumentPart().getContent().add(pTitle); //параграф с названием таблицы
+		    
+	    	template.getMainDocumentPart().getContent().add(pTitle); //параграф с названием таблицы
+		    
 		}
 		
 		
@@ -178,6 +183,34 @@ public class DOCXworker {
 		template.getMainDocumentPart().getContent().add(factory.createP());
 
 	}
+	
+	public void insertBonusTables(ArrayList<BonusEntry> tablesForBonus, String title){
+		ObjectFactory factory = Context.getWmlObjectFactory();
+		
+		P pTitle = factory.createP(); 
+	    
+	    PPr pPr = factory.createPPr();
+	    PStyle pStyle = factory.createPPrBasePStyle();
+	    pStyle.setVal("Delta2");
+        pPr.setPStyle(pStyle);
+	    pTitle.setPPr(pPr);
+	    R hrun = factory.createR();
+	    Text htxt = new Text();
+	    htxt.setValue(title);
+	    hrun.getContent().add(htxt);
+	    pTitle.getContent().add(hrun);
+		
+	    template.getMainDocumentPart().getContent().add(pTitle); //параграф с названием таблицы
+	    
+		for(BonusEntry be : tablesForBonus){
+			if(be.isOneColumn()){
+				insertNewTableWithTwoColumns(be.getTable(), (be.getTitle().contains(StaticStrings.googleString) ? StaticStrings.googleString : "YANDEX"), be.getLastPos(), true);
+			}else{
+				insertNewTable(be.getTable(), be.getTitle(), be.getLastPos(), true);
+			}
+		}
+	}
+	
 	
 	//добавить строку в таблицу
 	public void addRowToTable(Tbl reviewtable, Line line, boolean twoColumns, boolean isGoogle, int lastPos) {

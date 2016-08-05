@@ -114,38 +114,55 @@ Boolean prices = (request.getParameter("prices") != null );
 		<div class="content"><input class="upload" type="file" accept="text/csv" name="uploadFile" required/></div>
 		</div>
 		<%if(prices) {%>
-		<div class="top">
-		<div class="header"><h3>Файл CSV с ценами</h3></div>
-		<div class="content"><input class="upload" type="file" accept="text/csv" name="uploadPricesFile" required/></div>
-		</div>
-		<div class="header"><h3>Настройки выгрузки</h3></div>
-		<div class="header"><h4>Таблицы</h4></div>
-		<div class="checkbox"><input type="checkbox" name="isSingles" checked>Фразы без добавлений</div>
-		<div class="checkbox"><input type="checkbox" name="isRostov" checked>Ростов-на-Дону</div>
-		<div class="checkbox"><input type="checkbox" name="isCities">Другие города</div>
-		<div class="checkbox"><input type="checkbox" name="isAddWords">Дополнительные слова</div>		
-		<div class="header"><h4>Доп. настройки</h4></div>
-		<div class="checkbox"><input type="checkbox" name="isNeedTableChecking" checked>Проверять целостность таблиц (не всегда работает)</div>
-		<div class="checkbox"><input type="checkbox" name="isBestLineToTop" checked>"Вытягивать" лучшие строки</div>
-		<div class="header"><span>Топ:</span></div>
-		<div class="content"><input class="input" type="number" name="topNum" value="10"></input></div>
-		<div class="header"><span>А также оставлять до:</span></div>
-		<div class="content"><input class="input" type="number" name="leaveNum" value="15"></input></div>
-		<input type="hidden" name="tabletype" value="prices">
+			<div class="top">
+			<div class="header"><h3>Файл CSV с ценами</h3></div>
+			<div class="content"><input class="upload" type="file" accept="text/csv" name="uploadPricesFile" required/></div>
+			</div>
+			<div class="header"><span>Регион продвижения</span></div>
+			<div class="content"><input class="input" type="text" name="promoRegion" value="<%=(selectedBlank == null ? "" : selectedBlank.getFullName()) %>"></input></div>
+			<div class="header"><h3>Настройки выгрузки</h3></div>
+			<div class="header"><h4>Таблицы</h4></div>
+			<div class="checkbox"><input type="checkbox" name="isSingles" checked>Фразы без добавлений |
+			по выходу?<input type="checkbox" name="isSinglesSumm" checked></div>
+			<div class="checkbox"><input type="checkbox" name="isRostov" checked>Ростов-на-Дону |
+			по выходу?<input type="checkbox" name="isRostovSumm" checked></div>
+			<div class="checkbox"><input type="checkbox" name="isCities">Другие города |
+			по выходу?<input type="checkbox" name="isCitiesSumm"></div>
+			<div class="checkbox"><input type="checkbox" name="isAddWords">Дополнительные слова |
+			по выходу?<input type="checkbox" name="isAddWordsSumm"></div>		
+			<div class="header"><h4>Доп. настройки</h4></div>
+			<div class="checkbox"><input type="checkbox" name="isNeedTableChecking" checked>Проверять целостность таблиц (не всегда работает)</div>
+			<div class="checkbox"><input type="checkbox" name="isBestLineToTop" checked>"Вытягивать" лучшие строки</div>
+			<div class="header"><span>Топ:</span></div>
+			<div class="content"><input class="input" type="number" name="topNum" value="10"></input></div>
+			<div class="header"><span>А также оставлять до:</span></div>
+			<div class="content"><input class="input" type="number" name="leaveNum" value="15"></input></div>
+			<input type="hidden" name="tabletype" value="prices">
 		<%}else{ %>
-		<div class="header"><h3>Настройки выгрузки</h3></div>
-		<div class="header"><h4>Таблицы</h4></div>
-		<div class="checkbox"><input type="checkbox" name="isSingles" checked>Фразы без добавлений | раздельно:<input type="checkbox" name="isSepSingles" checked></div>
-		<div class="checkbox"><input type="checkbox" name="isRostov" checked>Ростов-на-Дону | раздельно:<input type="checkbox" name="isSepRostov"></div>
-		<div class="checkbox"><input type="checkbox" name="isCities">Другие города | раздельно:<input type="checkbox" name="isSepOther"></div>
-		<div class="checkbox"><input type="checkbox" name="isAddWords">Дополнительные слова | раздельно:<input type="checkbox" name="isSepAddw"></div>		
-		<div class="header"><h4>Доп. настройки</h4></div>
-		<div class="checkbox"><input type="checkbox" name="isNeedTableChecking" checked>Проверять целостность таблиц (не всегда работает)</div>
-		<div class="checkbox"><input type="checkbox" name="isBestLineToTop" checked>"Вытягивать" лучшие строки</div>
-		<div class="checkbox"><input type="checkbox" name="leaveEmpty">Оставлять "ненужные" строчки</div><br>
-		<div class="header"><span>Последняя позиция бонус</span></div><div class="content"><input class="input" type="number" name="lastBonusPos" value="16"></input></div>
-		<div class="header"><span>Последняя позиция остальные</span></div><div class="content"><input class="input" type="number" name="lastCitiesPos" value="28"></input></div>
-		<input type="hidden" name="tabletype" value="usual">
+			<div class="header"><span>Регион продвижения</span></div>
+			<div class="content"><input class="input" type="text" name="promoRegion" value="<%=(selectedBlank == null ? "" : selectedBlank.getFullName()) %>"></input></div>
+			<div class="header"><h3>Настройки выгрузки</h3></div>
+			<div class="header"><h4>Таблицы</h4></div>
+			<div class="checkbox"><input type="checkbox" name="isSingles" checked>Фразы без добавлений |
+			раздельно:<input type="checkbox" name="isSepSingles" checked>
+			Бонус?<input type="checkbox" name="isSinglesBonus" checked></div>
+			<div class="checkbox"><input type="checkbox" name="isRostov" checked>Ростов-на-Дону |
+			раздельно:<input type="checkbox" name="isSepRostov">
+			Бонус?<input type="checkbox" name="isRostovBonus"></div>
+			<div class="checkbox"><input type="checkbox" name="isCities">Другие города |
+			раздельно:<input type="checkbox" name="isSepOther">
+			Бонус?<input type="checkbox" name="isCitiesBonus"></div>
+			<div class="checkbox"><input type="checkbox" name="isAddWords">Дополнительные слова |
+			раздельно:<input type="checkbox" name="isSepAddw">
+			Бонус?<input type="checkbox" name="isAddWordsBonus"></div>
+			
+			<div class="header"><h4>Доп. настройки</h4></div>
+			<div class="checkbox"><input type="checkbox" name="isNeedTableChecking" checked>Проверять целостность таблиц (не всегда работает)</div>
+			<div class="checkbox"><input type="checkbox" name="isBestLineToTop" checked>"Вытягивать" лучшие строки</div>
+			<div class="checkbox"><input type="checkbox" name="leaveEmpty">Оставлять "ненужные" строчки</div><br>
+			<div class="header"><span>Последняя позиция бонус</span></div><div class="content"><input class="input" type="number" name="lastBonusPos" value="16"></input></div>
+			<div class="header"><span>Последняя позиция остальные</span></div><div class="content"><input class="input" type="number" name="lastCitiesPos" value="28"></input></div>
+			<input type="hidden" name="tabletype" value="usual">
 		<%}%>
 		
 		<div class="footer"><input class="button" type="submit" value="Делать"></div>

@@ -9,6 +9,8 @@ import javax.xml.bind.JAXBException;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
+import Utils.StaticStrings;
+
 
 public class ReportBuilder{
 	
@@ -18,7 +20,7 @@ public class ReportBuilder{
 	private Line currentLine;
 	private boolean eof = false; //end of file
 	private CSVReader csvReader;
-	private Table bonusForEtalon = null;
+	private Table singlesForEtalon = null;
 	
 	private DOCXworker dw;
 	
@@ -26,6 +28,8 @@ public class ReportBuilder{
 	private boolean isRostov;
 	private boolean isCities;
 	private boolean isAddWords;
+	
+	
 
 	private int topNum;
 	private int leaveNum;
@@ -34,7 +38,8 @@ public class ReportBuilder{
 	private boolean isBestLineToTop;
 	
 	private int totalPhraseCount = 0;
-	//private int topPhraseCount = 0;
+
+	private String promoRegion;
 	
 	public ReportBuilder(String csvFileName, String priceFileName, HashMap<String, String> values) {
 		
@@ -51,6 +56,8 @@ public class ReportBuilder{
 		
 		this.isNeedTableChecking = values.containsKey("isNeedTableChecking");
 		this.isBestLineToTop = values.containsKey("isBestLineToTop");
+		
+		this.promoRegion = values.get("promoRegion");
 
 	}
 	
@@ -94,12 +101,12 @@ public class ReportBuilder{
 		currentLine = csvReader.readLine();
 		checkEOF(); 
 	
-		bonusForEtalon = new Table();
+		singlesForEtalon = new Table();
 		
 		while(!csvReader.isTableSeparator(currentLine.getString()) & !eof){ //пока следующая строка не разделитель
 			this.totalPhraseCount++;
 			
-			bonusForEtalon.addLine(currentLine);
+			singlesForEtalon.addLine(currentLine);
 			
 			currentLine = csvReader.readLine();
 			checkEOF();
@@ -108,13 +115,12 @@ public class ReportBuilder{
 			}
 		}
 		
-		ArrayList<Table> bonuses = new ArrayList<Table>(); 
-		bonuses.add(bonusForEtalon);
+		ArrayList<Table> singles = new ArrayList<Table>(); 
+		singles.add(singlesForEtalon);
 		
-		String bonusstring = "БОНУС: наличие позиций сайта по региональным запросам без указания города - показатель высокого качества проводимых мероприятий!";
-		Table bonus = Table.buildBestTable(bonuses, this.leaveNum, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
+		Table single = Table.buildBestTable(singles, this.leaveNum, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
 		//для выгрузки в .docx
-		dw.insertNewTable(bonus, bonusstring, this.topNum);
+		dw.insertNewTable(single, StaticStrings.singlesString + this.promoRegion, this.topNum);
 		
 	}
 	
@@ -155,8 +161,8 @@ public class ReportBuilder{
 		
 		//ПРОВЕРЯЕМ ЦЕЛОСТНОСТЬ РОСТОВА!
 		if(isNeedTableChecking){
-			if(this.bonusForEtalon != null){
-				TableFixer.checkTables(rostovTables, this.bonusForEtalon);
+			if(this.singlesForEtalon != null){
+				TableFixer.checkTables(rostovTables, this.singlesForEtalon);
 			}else{
 				System.out.println("Опция проверки целостности включена, но не было бонуса");
 			}
@@ -166,7 +172,7 @@ public class ReportBuilder{
 		
 		Table rostovTABLE = Table.buildBestTable(rostovTables, this.leaveNum, this.isBestLineToTop);
 		//для выгрузки в .docx
-		dw.insertNewTable(rostovTABLE, "С добавлением города: Ростов-на-Дону",  this.topNum);
+		dw.insertNewTable(rostovTABLE, StaticStrings.rostovString,  this.topNum);
 	}
 	
 	
@@ -213,8 +219,8 @@ public class ReportBuilder{
 		
 		//СОБРАЛИ ВСЕ ТАБЛИЦЫ В КОНЦЕ ФАЙЛА, ДУ СТАФФ
 		if(isNeedTableChecking){
-			if(this.bonusForEtalon != null){
-				TableFixer.checkTables(oneCityTables, this.bonusForEtalon);
+			if(this.singlesForEtalon != null){
+				TableFixer.checkTables(oneCityTables, this.singlesForEtalon);
 			}else{
 				System.out.println("Опция проверки целостности включена, но не было бонуса");
 			}
@@ -287,7 +293,7 @@ public class ReportBuilder{
 		}else{
 			Table citiesToPrint = new Table(realCities);
 			
-			dw.insertNewTable(citiesToPrint, "С добавлением других городов", this.topNum);
+			dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.topNum);
 			
 		}
 		
@@ -309,7 +315,7 @@ public class ReportBuilder{
 			Table addWord = Table.buildBestTable(temp, this.leaveNum, this.isBestLineToTop);
 			addWordsToPrint.plusTable(addWord);
 		}
-		dw.insertNewTable(addWordsToPrint, "С доп. словами", this.topNum);
+		dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.topNum);
 
 	}
 	

@@ -1,2 +1,3 @@
-wildstone.biz!Вадим Николаевич
-polygrafkom.ru !Алексей Николаевич
+!
+wildstone.biz!Уважаемый Вадим Николаевич
+polygrafkom.ru!Уважаемый Алексей Николаевич

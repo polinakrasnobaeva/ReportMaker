@@ -1,11 +1,10 @@
-<%@page import="singletons.ClientWorker"%>
-<%@ page import="plain.Blank, plain.Optimizer, java.util.HashMap, java.util.Map.Entry, java.util.List" %>
-<%@page import="java.util.Locale"%>
-<%@page import="java.util.Calendar"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<%
-String lineBreaker="&#013;&#010;";
+<%@page import="java.text.DateFormat"%>
+<%@page import="java.time.Instant"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.util.LinkedHashMap"%>
+<%@page import="java.io.File, summCounterModule.Reacher, singletons.ClientWorker, plain.Blank, plain.Optimizer, java.util.HashMap, java.util.Map.Entry, java.util.List, java.util.Locale, java.util.Calendar" %>
+<%@page language="java" contentType="text/html; charset=UTF-8"%><%@page pageEncoding="UTF-8"%>
+<%String lineBreaker="&#013;&#010;";
 Calendar c = Calendar.getInstance();
 String date = c.getDisplayName(Calendar.MONTH, Calendar.LONG_STANDALONE, new Locale.Builder().setLanguage("ru").setScript("Cyrl").build()) + ", " + c.get(Calendar.YEAR);
 
@@ -20,12 +19,11 @@ Entry<String, String> selectedClient = null;
 
 ClientWorker cw = (ClientWorker)request.getAttribute("clientworker");
 
-Boolean prices = (request.getParameter("prices") != null );
-%>
-
+Boolean prices = (request.getParameter("prices") != null );%>
 <!DOCTYPE html>
 <html>
 <head>
+<script type="text/javascript" src="./js/Chart.min.js"></script>
 <link href="./css/style.css" rel="stylesheet">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
@@ -95,6 +93,53 @@ Boolean prices = (request.getParameter("prices") != null );
 		</form>
 	<hr>
 	
+	<%if(prices && selectedClient != null){
+		Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), selectedClient.getKey());
+		if (r.exists()){
+			LinkedHashMap<Long, Float> stats = r.loadStats();
+			DateFormat df = DateFormat.getInstance();
+			out.println("<canvas id='reachChart' width='400' height='200'></canvas>");
+			%><script>
+				var ctx = document.getElementById("reachChart");
+				var myChart = new Chart(ctx, {
+				    type: 'bar',
+				    data: {
+				        labels: [<%
+				        			for(Entry<Long, Float> ent : stats.entrySet()){
+				        				out.print("\"" + df.format(Date.from(Instant.ofEpochMilli(ent.getKey()))) + "\"" + ",");
+				     				}
+				                 %>],
+				        datasets: [{
+				            label: 'Проценты по выходу фраз',
+				            data: [<%
+				        			for(Entry<Long, Float> ent : stats.entrySet()){
+				        				out.print("\"" + ent.getValue() + "\"" + ",");
+				     				}
+				                 %>],
+				            backgroundColor: [
+				                'rgba(255, 99, 132, 0.2)',
+				            ],
+				            borderColor: [
+				                'rgba(255,99,132,1)',
+				            ],
+				            borderWidth: 1
+				        }]
+				    },
+				    options: {
+				        scales: {
+				            yAxes: [{
+				                ticks: {
+				                    beginAtZero:true
+				                }
+				            }]
+				        }
+				    }
+				});
+			</script><%
+		}
+		
+	}%>
+	
 	<form name="reportform" class="region-form" method="post" action="reportupload" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="blankName" value="<%= (selectedBlank == null ? "" : selectedBlank.getName()) %>">
 		<div class="top"><div class="header"><h2>Файл с Метрикой(.docx)</h2></div>
@@ -123,13 +168,13 @@ Boolean prices = (request.getParameter("prices") != null );
 			<div class="header"><h3>Настройки выгрузки</h3></div>
 			<div class="header"><h4>Таблицы</h4></div>
 			<div class="checkbox"><input type="checkbox" name="isSingles" checked>Фразы без добавлений |
-			по выходу?<input type="checkbox" name="isSinglesSumm" checked></div>
+			по выходу?<input type="checkbox" name="isSinglesReach" checked></div>
 			<div class="checkbox"><input type="checkbox" name="isRostov" checked>Ростов-на-Дону |
-			по выходу?<input type="checkbox" name="isRostovSumm" checked></div>
+			по выходу?<input type="checkbox" name="isRostovReach" checked></div>
 			<div class="checkbox"><input type="checkbox" name="isCities">Другие города |
-			по выходу?<input type="checkbox" name="isCitiesSumm"></div>
+			по выходу?<input type="checkbox" name="isCitiesReach"></div>
 			<div class="checkbox"><input type="checkbox" name="isAddWords">Дополнительные слова |
-			по выходу?<input type="checkbox" name="isAddWordsSumm"></div>		
+			по выходу?<input type="checkbox" name="isAddWordsReach"></div>		
 			<div class="header"><h4>Доп. настройки</h4></div>
 			<div class="checkbox"><input type="checkbox" name="isNeedTableChecking" checked>Проверять целостность таблиц (не всегда работает)</div>
 			<div class="checkbox"><input type="checkbox" name="isBestLineToTop" checked>"Вытягивать" лучшие строки</div>

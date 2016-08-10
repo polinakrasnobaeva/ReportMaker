@@ -26,6 +26,7 @@ import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimeUtility;
 import logic.ReportAssembler;
 import logic.ReportBuilder;
 import summCounterModule.DOCXworker;
+import summCounterModule.Reacher;
 
 public class UploadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -92,7 +93,6 @@ public class UploadServlet extends HttpServlet {
 		//создание файла docx с таблицами
         
         
-        
 		if(((String)values.get("tabletype")).equals("usual")){
 			docExamplePath = getServletContext().getRealPath("config" + File.separator + "EXAMPLE.docx");
 			ReportBuilder tableBuilder = new ReportBuilder(csvPath, values);
@@ -111,7 +111,7 @@ public class UploadServlet extends HttpServlet {
 			docExamplePath = getServletContext().getRealPath("config" + File.separator + "priceEXAMPLE.docx");
 			summCounterModule.ReportBuilder tableBuilder = new summCounterModule.ReportBuilder(csvPath, csvPricesPath, values);
 			DOCXworker dw = tableBuilder.buildReport(docExamplePath);
-			System.out.println("ВЫШЛО ФРАЗ: " + dw.getTopPhraseCount());
+			
 			WordprocessingMLPackage tableWMLP = dw.getWMLP();
 			try {
 				ReportAssembler.assebmle(examplePath, tableWMLP, metricaPath, resultFileName, values, getServletContext().getRealPath(File.separator));
@@ -124,6 +124,13 @@ public class UploadServlet extends HttpServlet {
 			}
 			File csvPricesFile = new File(csvPricesPath);
 			csvPricesFile.delete();
+			
+			Reacher.pushStats(
+					getServletContext().getRealPath("config" + File.separator + "reachers" + File.separator 
+							+ values.get("clientsite").replace("http://", "").replace("/", "").replace("www", "") + ".txt"),
+					System.currentTimeMillis(),
+					(float)tableBuilder.topPhraseCount / tableBuilder.totalPhraseCount * 100);
+			System.out.println("" + tableBuilder.topPhraseCount + "\t" + tableBuilder.totalPhraseCount);
 		}
 		File csvFile = new File(csvPath);
 		File metricaFile = new File(metricaPath);

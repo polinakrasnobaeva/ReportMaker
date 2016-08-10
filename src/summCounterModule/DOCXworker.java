@@ -33,14 +33,7 @@ public class DOCXworker {
 	private Tbl templateTable;
 	private Tr templateRow;
 	private Tr templateRow2;
-	private Tr templateEndRow;
-	
-	private int topPhraseCount = 0;
-	
-	public int getTopPhraseCount(){
-		return this.topPhraseCount;
-	}
-		
+	private Tr templateEndRow;		
 	
 	public DOCXworker(String sourceFileName) throws Docx4JException, JAXBException{
 		try {
@@ -95,9 +88,11 @@ public class DOCXworker {
 	}
 	
 	
-	//добавление таблицы 
-	public void insertNewTable(Table table, String title, int topNum){
+	//добавление таблицы
+	//возвращает кол-во вышедших фраз
+	public int insertNewTable(Table table, String title, int topNum){
 		int price = 0;
+		int result = 0;// кол-во вышедших в топ строк
 		
 		ObjectFactory factory = Context.getWmlObjectFactory();
 		
@@ -119,7 +114,7 @@ public class DOCXworker {
 		for(Line line : table.getLines()){
 			addRowToTable(newTbl, line, topNum);
 			if(line.getYa() <= topNum){
-				this.topPhraseCount++;
+				result++;
 				price += line.getPrice();
 			}
 				
@@ -129,13 +124,12 @@ public class DOCXworker {
 		((Text)getAllElementFromObject(summRow, Text.class).get(1)).setValue("" + price);
 		newTbl.getContent().add(summRow);
 		
-		
-		
 		template.getMainDocumentPart().getContent().add(pTitle); //параграф с названием таблицы
 		template.getMainDocumentPart().getContent().add(factory.createP()); //пустой параграф-отступ
 		template.getMainDocumentPart().getContent().add(newTbl);
 		template.getMainDocumentPart().getContent().add(factory.createP());
 
+		return result;
 	}
 	
 	

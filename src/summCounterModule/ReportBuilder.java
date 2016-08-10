@@ -29,7 +29,10 @@ public class ReportBuilder{
 	private boolean isCities;
 	private boolean isAddWords;
 	
-	
+	private boolean isSinglesReach;
+	private boolean isRostovReach;
+	private boolean isCitiesReach;
+	private boolean isAddWordsReach;
 
 	private int topNum;
 	private int leaveNum;
@@ -37,7 +40,8 @@ public class ReportBuilder{
 	private boolean isNeedTableChecking;
 	private boolean isBestLineToTop;
 	
-	private int totalPhraseCount = 0;
+	public int totalPhraseCount = 0;
+	public int topPhraseCount = 0;
 
 	private String promoRegion;
 	
@@ -50,6 +54,11 @@ public class ReportBuilder{
 		this.isRostov = values.containsKey("isRostov");
 		this.isCities = values.containsKey("isCities");
 		this.isAddWords = values.containsKey("isAddWords");
+		
+		this.isSinglesReach = values.containsKey("isSinglesReach");
+		this.isRostovReach = values.containsKey("isRostovReach");
+		this.isCitiesReach = values.containsKey("isCitiesReach");
+		this.isAddWordsReach = values.containsKey("isAddWordsReach");
 	
 		this.topNum = Integer.valueOf(values.get("topNum"));
 		this.leaveNum = Integer.valueOf(values.get("leaveNum"));
@@ -86,13 +95,13 @@ public class ReportBuilder{
 
 		System.out.println("Конвертация таблиц успешно завершена");
 		System.out.println("ВСЕГО ФРАЗ: " + this.totalPhraseCount);
-		
+		System.out.println("В ТОП ФРАЗ: " + this.topPhraseCount);
 		return dw;
 	}
 	
 	
 	/**
-	 * ДЕЛАТЬ БОНУС
+	 * ДЕЛАТЬ ЧИСТЫЕ ФРАЗЫ
 	 */
 
 	private void doSingles(boolean isNeed){
@@ -103,9 +112,7 @@ public class ReportBuilder{
 	
 		singlesForEtalon = new Table();
 		
-		while(!csvReader.isTableSeparator(currentLine.getString()) & !eof){ //пока следующая строка не разделитель
-			this.totalPhraseCount++;
-			
+		while(!csvReader.isTableSeparator(currentLine.getString()) & !eof){ //пока следующая строка не разделитель		
 			singlesForEtalon.addLine(currentLine);
 			
 			currentLine = csvReader.readLine();
@@ -118,9 +125,15 @@ public class ReportBuilder{
 		ArrayList<Table> singles = new ArrayList<Table>(); 
 		singles.add(singlesForEtalon);
 		
+		
 		Table single = Table.buildBestTable(singles, this.leaveNum, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
 		//для выгрузки в .docx
-		dw.insertNewTable(single, StaticStrings.singlesString + this.promoRegion, this.topNum);
+		int top = dw.insertNewTable(single, StaticStrings.singlesString + this.promoRegion, this.topNum);
+		
+		if(this.isSinglesReach){
+			this.totalPhraseCount += singlesForEtalon.getSize(); // плюсуем кол-во строк в Синглах, если они по выходу
+			this.topPhraseCount += top;
+		}
 		
 	}
 	
@@ -143,6 +156,7 @@ public class ReportBuilder{
 			currentLine = csvReader.readLine();
 			checkEOF();
 			while(!csvReader.isTableSeparator(currentLine.getString())){ //пока следующая строка не разделитель
+				
 				table.addLine(currentLine);
 				currentLine = csvReader.readLine();
 				checkEOF();
@@ -167,12 +181,17 @@ public class ReportBuilder{
 				System.out.println("Опция проверки целостности включена, но не было бонуса");
 			}
 		}
-		//для счёта кол-ва фраз
-		this.totalPhraseCount += rostovTables.get(0).getSize();
+		
 		
 		Table rostovTABLE = Table.buildBestTable(rostovTables, this.leaveNum, this.isBestLineToTop);
 		//для выгрузки в .docx
-		dw.insertNewTable(rostovTABLE, StaticStrings.rostovString,  this.topNum);
+		int top = dw.insertNewTable(rostovTABLE, StaticStrings.rostovString,  this.topNum);
+		
+		//для счёта кол-ва фраз
+		if(this.isRostovReach){
+			this.totalPhraseCount += rostovTables.get(0).getSize();
+			this.topPhraseCount += top;
+		}
 	}
 	
 	
@@ -268,10 +287,14 @@ public class ReportBuilder{
 					oneCityTables.remove(city2);
 					i-=2;
 					
+					//для счёта кол-ва фраз
+					if(this.isCitiesReach){
+						this.totalPhraseCount += city1.getSize();
+					}
+					
 					Table cityForReal = Table.buildBestTable(oneCityTable, this.leaveNum, this.isBestLineToTop);
 					realCities.add(cityForReal);
-					//для счёта кол-ва фраз
-					this.totalPhraseCount += oneCityTable.size();
+					
 
 					
 				}else{
@@ -293,8 +316,10 @@ public class ReportBuilder{
 		}else{
 			Table citiesToPrint = new Table(realCities);
 			
-			dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.topNum);
-			
+			int top = dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.topNum);
+			if(this.isCitiesReach){
+				this.topPhraseCount += top;
+			}
 		}
 		
 		if(addWordsAreFound){
@@ -310,13 +335,17 @@ public class ReportBuilder{
 			ArrayList<Table> temp = new ArrayList<>();
 			temp.add(tab);
 			//для счёта кол-ва фраз
-			this.totalPhraseCount += tab.getSize();
+			if(this.isAddWordsReach){
+				this.totalPhraseCount += tab.getSize();
+			}
 			
 			Table addWord = Table.buildBestTable(temp, this.leaveNum, this.isBestLineToTop);
 			addWordsToPrint.plusTable(addWord);
 		}
-		dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.topNum);
-
+		int top = dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.topNum);
+		if(this.isAddWordsReach){
+			this.topPhraseCount += top;
+		}
 	}
 	
 	

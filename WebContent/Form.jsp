@@ -93,12 +93,14 @@ Boolean prices = (request.getParameter("prices") != null );%>
 		</form>
 	<hr>
 	
+	<!-- График по выходу -->
+	
 	<%if(prices && selectedClient != null){
 		Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), selectedClient.getKey());
 		if (r.exists()){
 			LinkedHashMap<Long, Float> stats = r.loadStats();
 			DateFormat df = DateFormat.getInstance();
-			out.println("<canvas id='reachChart' width='400' height='200'></canvas>");
+			out.println("<canvas id='reachChart' width='800' height='350'></canvas>");
 			%><script>
 				var ctx = document.getElementById("reachChart");
 				var myChart = new Chart(ctx, {
@@ -116,12 +118,6 @@ Boolean prices = (request.getParameter("prices") != null );%>
 				        				out.print("\"" + ent.getValue() + "\"" + ",");
 				     				}
 				                 %>],
-				            backgroundColor: [
-				                'rgba(255, 99, 132, 0.2)',
-				            ],
-				            borderColor: [
-				                'rgba(255,99,132,1)',
-				            ],
 				            borderWidth: 1
 				        }]
 				    },
@@ -129,15 +125,15 @@ Boolean prices = (request.getParameter("prices") != null );%>
 				        scales: {
 				            yAxes: [{
 				                ticks: {
-				                    beginAtZero:true
+				                    beginAtZero:true,
+				                    max:100
 				                }
 				            }]
 				        }
 				    }
 				});
 			</script><%
-		}
-		
+		}	
 	}%>
 	
 	<form name="reportform" class="region-form" method="post" action="reportupload" method="post" enctype="multipart/form-data">

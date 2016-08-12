@@ -4,11 +4,12 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 public class Reacher {
 	private String path;
@@ -65,20 +66,24 @@ public class Reacher {
 		File f = new File(path);
 		return f.exists();
 	}
-
-	public static void pushStats(String path, long timeMillis, float percent){
+	
+	public static void pushStats(String path, LinkedHashMap<Long, Float> stats){
 		if(!fileExists(path)){
 			createFile(path);
 		}
 		
-		PrintWriter out = null;
 		try {
-			out = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+			FileOutputStream fos = new FileOutputStream(path);
+			OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8");
+			BufferedWriter bWriter = new BufferedWriter(osw);
+			for(Entry<Long, Float> st : stats.entrySet()){
+				bWriter.write("" + st.getKey() + "\t" + st.getValue() + "\n");
+			}
+			
+			bWriter.close();
+			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	    out.println(timeMillis + "\t" + percent);
-	    out.close();
 	}
 }

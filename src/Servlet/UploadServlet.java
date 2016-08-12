@@ -4,9 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -124,12 +129,33 @@ public class UploadServlet extends HttpServlet {
 			}
 			File csvPricesFile = new File(csvPricesPath);
 			csvPricesFile.delete();
+			//пушим
+			String clientSite = values.get("clientsite").replace("http://", "").replace("https://", "").replace("/", "").replace("www.", "");
 			
+			Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), clientSite);
+			LinkedHashMap<Long, Float> stats = r.loadStats();
+			Calendar currentC = Calendar.getInstance();
+			if(stats != null){
+				Entry <Long, Float> lastEntry = null;
+				
+				for(Entry<Long, Float> st : stats.entrySet()){
+					lastEntry = st;
+				}
+				Calendar lastC = Calendar.getInstance();
+				lastC.setTime(Date.from(Instant.ofEpochMilli(lastEntry.getKey())));
+				
+				if(lastC.get(Calendar.YEAR) == currentC.get(Calendar.YEAR) && lastC.get(Calendar.WEEK_OF_YEAR) == currentC.get(Calendar.WEEK_OF_YEAR)){
+					stats.remove(lastEntry.getKey());
+				}
+			}else{
+				stats = new LinkedHashMap<>();
+			}
+						
+			stats.put(currentC.getTimeInMillis(), (float)tableBuilder.topPhraseCount / tableBuilder.totalPhraseCount * 100);
+			//переписывается файл каждый раз, но так проще в каком-то смысле по коду
 			Reacher.pushStats(
 					getServletContext().getRealPath("config" + File.separator + "reachers" + File.separator 
-							+ values.get("clientsite").replace("http://", "").replace("/", "").replace("www", "") + ".txt"),
-					System.currentTimeMillis(),
-					(float)tableBuilder.topPhraseCount / tableBuilder.totalPhraseCount * 100);
+							+ clientSite + ".txt"), stats);
 			System.out.println("" + tableBuilder.topPhraseCount + "\t" + tableBuilder.totalPhraseCount);
 		}
 		File csvFile = new File(csvPath);
@@ -162,7 +188,7 @@ public class UploadServlet extends HttpServlet {
         
         resultFile.delete();
 
-        MainServlet.cw.addClient(values.get("clientsite").replace("http://", "").replace("/", "").replace("www", ""), values.get("clientappeal"));
+        MainServlet.cw.addClient(values.get("clientsite").replace("http://", "").replace("https://", "").replace("/", "").replace("www.", ""), values.get("clientappeal"));
 		
 	}
 	

@@ -73,6 +73,7 @@ public class ClientWorker {
 			e.printStackTrace();
 		}
 		
+		
 		this.clients = result;
 	}
 

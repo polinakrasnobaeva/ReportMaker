@@ -49,3 +49,4 @@ Temporary Items
 # build and settings ignore
 build/
 .settings/
+*.class

@@ -29,9 +29,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimeUtility;
 
 import logic.ReportAssembler;
-import logic.ReportBuilder;
-import summCounterModule.DOCXworker;
 import summCounterModule.Reacher;
+
+
 
 public class UploadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -71,10 +71,8 @@ public class UploadServlet extends HttpServlet {
 			    FileItem item = (FileItem) iter.next();
  
 			    if (item.isFormField()) {
-			    	//если принимаемая часть данных является полем формы
 			    	values.put(item.getFieldName(), item.getString("utf-8"));
 			    } else {
-			    	//в противном случае рассматриваем как файл
 			    	if(item.getFieldName().equals("uploadMetrica")){
 			    		metricaPath = processUploadedFile(item, "_metrica.docx");
 			    	}else if(item.getFieldName().equals("uploadFile")){
@@ -95,14 +93,12 @@ public class UploadServlet extends HttpServlet {
 		String resultFileName = getServletContext().getRealPath("result" + File.separator + "REPORT_" + random.nextInt() + ".docx");
 		String docExamplePath = "";
 		System.out.println(examplePath);
-		//создание файла docx с таблицами
         
         
 		if(((String)values.get("tabletype")).equals("usual")){
 			docExamplePath = getServletContext().getRealPath("config" + File.separator + "EXAMPLE.docx");
-			ReportBuilder tableBuilder = new ReportBuilder(csvPath, values);
+			logic.ReportBuilder tableBuilder = new logic.ReportBuilder(csvPath, values);
 			WordprocessingMLPackage tableWMLP = tableBuilder.buildReport(docExamplePath).getWMLP();
-			//объединение
 			try {
 				ReportAssembler.assebmle(examplePath, tableWMLP, metricaPath, resultFileName, values, getServletContext().getRealPath(File.separator));
 			} catch (Docx4JException e) {
@@ -115,7 +111,7 @@ public class UploadServlet extends HttpServlet {
 		}else if(((String)values.get("tabletype")).equals("prices")){
 			docExamplePath = getServletContext().getRealPath("config" + File.separator + "priceEXAMPLE.docx");
 			summCounterModule.ReportBuilder tableBuilder = new summCounterModule.ReportBuilder(csvPath, csvPricesPath, values);
-			DOCXworker dw = tableBuilder.buildReport(docExamplePath);
+			summCounterModule.DOCXworker dw = tableBuilder.buildReport(docExamplePath);
 			
 			WordprocessingMLPackage tableWMLP = dw.getWMLP();
 			try {
@@ -129,30 +125,33 @@ public class UploadServlet extends HttpServlet {
 			}
 			File csvPricesFile = new File(csvPricesPath);
 			csvPricesFile.delete();
-			//пушим
-			String clientSite = values.get("clientsite").replace("http://", "").replace("https://", "").replace("/", "").replace("www.", "");
-			
+			String clientSite = (new String(values.get("clientsite").getBytes(), "cp1251")).replace("http://", "").replace("https://", "").replace("/", "").replace("www.", "");
+			System.out.println("РЎРўР РћРљРђ: " + clientSite);
+			//РїСѓС€РёРј СЃС‚Р°С‚С‹
 			Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), clientSite);
 			LinkedHashMap<Long, Float> stats = r.loadStats();
 			Calendar currentC = Calendar.getInstance();
-			if(stats != null){
+			if(stats != null && stats.size() > 0){
 				Entry <Long, Float> lastEntry = null;
-				
+				lastEntry = null;
 				for(Entry<Long, Float> st : stats.entrySet()){
 					lastEntry = st;
 				}
 				Calendar lastC = Calendar.getInstance();
-				lastC.setTime(Date.from(Instant.ofEpochMilli(lastEntry.getKey())));
-				
-				if(lastC.get(Calendar.YEAR) == currentC.get(Calendar.YEAR) && lastC.get(Calendar.WEEK_OF_YEAR) == currentC.get(Calendar.WEEK_OF_YEAR)){
-					stats.remove(lastEntry.getKey());
+				if(lastEntry != null){
+					lastC.setTime(Date.from(Instant.ofEpochMilli(lastEntry.getKey())));
+					if(lastC.get(Calendar.YEAR) == currentC.get(Calendar.YEAR) && lastC.get(Calendar.WEEK_OF_YEAR) == currentC.get(Calendar.WEEK_OF_YEAR)){
+						stats.remove(lastEntry.getKey());
+					}
 				}
+
 			}else{
 				stats = new LinkedHashMap<>();
 			}
 						
 			stats.put(currentC.getTimeInMillis(), (float)tableBuilder.topPhraseCount / tableBuilder.totalPhraseCount * 100);
-			//переписывается файл каждый раз, но так проще в каком-то смысле по коду
+			System.out.println(getServletContext().getRealPath("config" + File.separator + "reachers") + File.separator 
+							+ clientSite + ".txt");
 			Reacher.pushStats(
 					getServletContext().getRealPath("config" + File.separator + "reachers" + File.separator 
 							+ clientSite + ".txt"), stats);
@@ -163,14 +162,12 @@ public class UploadServlet extends HttpServlet {
         csvFile.delete();
         metricaFile.delete();
 		
-		
-		///отправка файла на скачивание
 			
 		File resultFile = new File(resultFileName);
 		
         String fileType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         response.setContentType(fileType);
-        String filename = "ОТЧЕТ - " + values.get("clientsite") + " - " + values.get("date").substring(0, values.get("date").indexOf(',')) + ".docx";
+        String filename = "РћРўР§Р•Рў - " + values.get("clientsite") + " - " + values.get("date").substring(0, values.get("date").indexOf(',')) + ".docx";
         filename = MimeUtility.encodeText(filename, "utf-8", "B");
         
         response.setHeader("Content-disposition","attachment; "

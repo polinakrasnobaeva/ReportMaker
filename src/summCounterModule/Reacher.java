@@ -58,8 +58,8 @@ public class Reacher {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
-		return false;
 	}
 	
 	public static boolean fileExists(String path){
@@ -69,7 +69,9 @@ public class Reacher {
 	
 	public static void pushStats(String path, LinkedHashMap<Long, Float> stats){
 		if(!fileExists(path)){
-			createFile(path);
+			if(!createFile(path)){
+				return;
+			}
 		}
 		
 		try {

@@ -94,6 +94,8 @@ public class UploadServlet extends HttpServlet {
 		String docExamplePath = "";
 		System.out.println(examplePath);
         
+        int topCount = 0;
+        int totalCount = 1;
         
 		if(((String)values.get("tabletype")).equals("usual")){
 			docExamplePath = getServletContext().getRealPath("config" + File.separator + "EXAMPLE.docx");
@@ -108,6 +110,8 @@ public class UploadServlet extends HttpServlet {
 				
 				e.printStackTrace();
 			}
+			topCount = tableBuilder.topPhraseCount;
+			totalCount = tableBuilder.totalPhraseCount;
 		}else if(((String)values.get("tabletype")).equals("prices")){
 			docExamplePath = getServletContext().getRealPath("config" + File.separator + "priceEXAMPLE.docx");
 			summCounterModule.ReportBuilder tableBuilder = new summCounterModule.ReportBuilder(csvPath, csvPricesPath, values);
@@ -125,38 +129,45 @@ public class UploadServlet extends HttpServlet {
 			}
 			File csvPricesFile = new File(csvPricesPath);
 			csvPricesFile.delete();
-			String clientSite = (new String(values.get("clientsite").getBytes(), "cp1251")).replace("http://", "").replace("https://", "").replace("/", "").replace("www.", "");
-			System.out.println("СТРОКА: " + clientSite);
-			//пушим статы
-			Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), clientSite);
-			LinkedHashMap<Long, Float> stats = r.loadStats();
-			Calendar currentC = Calendar.getInstance();
-			if(stats != null && stats.size() > 0){
-				Entry <Long, Float> lastEntry = null;
-				lastEntry = null;
-				for(Entry<Long, Float> st : stats.entrySet()){
-					lastEntry = st;
-				}
-				Calendar lastC = Calendar.getInstance();
-				if(lastEntry != null){
-					lastC.setTime(Date.from(Instant.ofEpochMilli(lastEntry.getKey())));
-					if(lastC.get(Calendar.YEAR) == currentC.get(Calendar.YEAR) && lastC.get(Calendar.WEEK_OF_YEAR) == currentC.get(Calendar.WEEK_OF_YEAR)){
-						stats.remove(lastEntry.getKey());
-					}
-				}
-
-			}else{
-				stats = new LinkedHashMap<>();
-			}
-						
-			stats.put(currentC.getTimeInMillis(), (float)tableBuilder.topPhraseCount / tableBuilder.totalPhraseCount * 100);
-			System.out.println(getServletContext().getRealPath("config" + File.separator + "reachers") + File.separator 
-							+ clientSite + ".txt");
-			Reacher.pushStats(
-					getServletContext().getRealPath("config" + File.separator + "reachers" + File.separator 
-							+ clientSite + ".txt"), stats);
-			System.out.println("" + tableBuilder.topPhraseCount + "\t" + tableBuilder.totalPhraseCount);
+			
+			topCount = tableBuilder.topPhraseCount;
+			totalCount = tableBuilder.totalPhraseCount;
 		}
+		
+		//пушим статы
+		String clientSite = (new String(values.get("clientsite").getBytes(), "cp1251")).replace("http://", "").replace("https://", "").replace("/", "").replace("www.", "");
+		System.out.println("СТРОКА: " + clientSite);
+		
+		Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), clientSite);
+		LinkedHashMap<Long, Float> stats = r.loadStats();
+		Calendar currentC = Calendar.getInstance();
+		if(stats != null && stats.size() > 0){
+			Entry <Long, Float> lastEntry = null;
+			lastEntry = null;
+			for(Entry<Long, Float> st : stats.entrySet()){
+				lastEntry = st;
+			}
+			Calendar lastC = Calendar.getInstance();
+			if(lastEntry != null){
+				lastC.setTime(Date.from(Instant.ofEpochMilli(lastEntry.getKey())));
+				if(lastC.get(Calendar.YEAR) == currentC.get(Calendar.YEAR) && lastC.get(Calendar.WEEK_OF_YEAR) == currentC.get(Calendar.WEEK_OF_YEAR)){
+					stats.remove(lastEntry.getKey());
+				}
+			}
+
+		}else{
+			stats = new LinkedHashMap<>();
+		}
+					
+		stats.put(currentC.getTimeInMillis(), (float)topCount / totalCount * 100);
+		System.out.println(getServletContext().getRealPath("config" + File.separator + "reachers") + File.separator 
+						+ clientSite + ".txt");
+		Reacher.pushStats(
+				getServletContext().getRealPath("config" + File.separator + "reachers" + File.separator 
+						+ clientSite + ".txt"), stats);
+		System.out.println("" + topCount + "\t" + totalCount);
+		////////////////////////////////////////////
+		
 		File csvFile = new File(csvPath);
 		File metricaFile = new File(metricaPath);
         csvFile.delete();

@@ -48,6 +48,9 @@ public class ReportBuilder{
 	private boolean isCitiesBonus;
 	private boolean isAddWordsBonus;
 	
+	public int totalPhraseCount = 0;
+	public int topPhraseCount = 0;
+	
 	private String promoRegion;
 	
 	public ReportBuilder(String sourceFileName, HashMap<String, String> values) {
@@ -132,6 +135,7 @@ public class ReportBuilder{
 		ArrayList<Table> singles = new ArrayList<Table>(); 
 		singles.add(singleForEtalon);
 		
+
 		if(this.isSinglesBonus){
 			Table single = Table.buildBestTable(singles, this.lastBonusPos, false, this.leaveEmpty, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
 			
@@ -143,17 +147,25 @@ public class ReportBuilder{
 				this.tablesForBonus.add(new BonusEntry(single, false, StaticStrings.singlesBonusString, this.lastBonusPos));
 			}
 		}else{
+			int top = 0;
+			
 			Table single = Table.buildBestTable(singles, this.lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
 			
 			if(isSepSingles){
-				dw.insertNewTableWithTwoColumns(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
+				top = dw.insertNewTableWithTwoColumns(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
 				single = Table.buildBestTable(singles, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
 				dw.insertNewTableWithTwoColumns(single, StaticStrings.googleString, this.lastCitiesPos, false);
 			}else{
-				dw.insertNewTable(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
+				top = dw.insertNewTable(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
 			}
+			
+			this.totalPhraseCount += singleForEtalon.getSize(); // плюсуем кол-во строк в Синглах, если они по выходу
+			this.topPhraseCount += top;
 		}
 		
+		if(!this.isSinglesBonus){
+			
+		}
 		
 	}
 	
@@ -212,15 +224,20 @@ public class ReportBuilder{
 				this.tablesForBonus.add(new BonusEntry(rostovTABLE, false, StaticStrings.rostovBonusString, this.lastBonusPos));
 			}
 		}else{
+			int top = 0;
+			
 			Table rostovTABLE = Table.buildBestTable(rostovTables, lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);
 			
 			if(isSepRostov){
-				dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
+				top = dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
 				rostovTABLE = Table.buildBestTable(rostovTables, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
 				dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.googleString, this.lastCitiesPos, false);
 			}else{
-				dw.insertNewTable(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
+				top = dw.insertNewTable(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
 			}
+			
+			this.totalPhraseCount += rostovTables.get(0).getSize();
+			this.topPhraseCount += top;
 		}
 				
 	}
@@ -327,6 +344,10 @@ public class ReportBuilder{
 							realCitiesGoo.add(cityForRealGoo);
 						}
 					}else{
+						//для счета
+						this.totalPhraseCount += city1.getSize();
+						
+												
 						Table cityForReal = Table.buildBestTable(oneCityTable, lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);
 						realCities.add(cityForReal);
 						if(isSepOther){
@@ -364,13 +385,15 @@ public class ReportBuilder{
 					this.tablesForBonus.add(new BonusEntry(citiesToPrint, false, StaticStrings.citiesBonusString, this.lastBonusPos));
 				}
 			}else{
+				int top = 0;
 				if(isSepOther){
-					dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
+					top = dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
 					citiesToPrint = Table.buildBestTable(realCitiesGoo, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
 					dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.googleString, this.lastCitiesPos, false);
 				}else{
-					dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
+					top = dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
 				}
+				this.topPhraseCount += top;
 			}
 						
 		}
@@ -387,6 +410,11 @@ public class ReportBuilder{
 		for(Table tab : tables){
 			ArrayList<Table> temp = new ArrayList<>();
 			temp.add(tab);
+			//для счета
+			if(!this.isAddWordsBonus){
+				this.totalPhraseCount += tab.getSize();
+			}
+			
 			Table addWord = Table.buildBestTable(temp, lastCitiesPos, false, this.leaveEmpty, this.isBestLineToTop);
 			addWordsToPrint.plusTable(addWord);
 			if(isSepAddw){
@@ -402,12 +430,14 @@ public class ReportBuilder{
 				this.tablesForBonus.add(new BonusEntry(addWordsToPrint, false, StaticStrings.addWordsBonusString, this.lastBonusPos));
 			}
 		}else{
+			int top = 0;
 			if(isSepAddw){
-				dw.insertNewTableWithTwoColumns(addWordsToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
+				top = dw.insertNewTableWithTwoColumns(addWordsToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
 				dw.insertNewTableWithTwoColumns(addWordsToPrintGoo, StaticStrings.googleString, this.lastCitiesPos, false);
 			}else{
-				dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.lastCitiesPos, false);
+				top = dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.lastCitiesPos, false);
 			}
+			this.topPhraseCount += top;
 		}
 
 	}

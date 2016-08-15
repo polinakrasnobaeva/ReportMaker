@@ -95,7 +95,7 @@ Boolean prices = (request.getParameter("prices") != null );%>
 	
 	<!-- График по выходу -->
 	
-	<%if(prices && selectedClient != null){
+	<%if(selectedClient != null){
 		Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), selectedClient.getKey());
 		if (r.exists()){
 			LinkedHashMap<Long, Float> stats = r.loadStats();

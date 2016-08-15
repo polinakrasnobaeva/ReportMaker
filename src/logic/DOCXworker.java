@@ -103,7 +103,9 @@ public class DOCXworker {
 	
 	
 	//добавление таблицы 
-	public void insertNewTable(Table table, String title, int lastPos, boolean isBonus){
+	public int insertNewTable(Table table, String title, int lastPos, boolean isBonus){
+		int result = 0;// кол-во вышедших в топ строк
+		
 		ObjectFactory factory = Context.getWmlObjectFactory();
 		
 	    P pTitle = factory.createP(); 
@@ -123,6 +125,9 @@ public class DOCXworker {
 		Tbl newTbl = (Tbl) XmlUtils.deepCopy(this.templateTable);
 		for(Line line : table.getLines()){
 			addRowToTable(newTbl, line, false, false, lastPos);
+			if(line.getYa() <= 10){
+				result++;
+			}
 		}
 		removeFirstRow(newTbl);
 		
@@ -133,10 +138,13 @@ public class DOCXworker {
 		template.getMainDocumentPart().getContent().add(newTbl);
 		template.getMainDocumentPart().getContent().add(factory.createP());
 
+		return result;
 	}
 	
 //добавление таблицы с двумя столбцами
-	public void insertNewTableWithTwoColumns(Table table, String title, int lastPos, boolean isBonus){
+	public int insertNewTableWithTwoColumns(Table table, String title, int lastPos, boolean isBonus){
+		int result = 0;// кол-во вышедших в топ строк
+		
 		ObjectFactory factory = Context.getWmlObjectFactory();
 		
 		boolean isGoogle = title.equals(StaticStrings.googleString);
@@ -174,6 +182,9 @@ public class DOCXworker {
 		
 		for(Line line : table.getLines()){
 			addRowToTable(newTbl, line, true, isGoogle, lastPos);
+			if(line.getYa() <= 10){
+				result++;
+			}
 		}
 		removeFirstRow(newTbl);
 		
@@ -181,6 +192,8 @@ public class DOCXworker {
 		template.getMainDocumentPart().getContent().add(factory.createP()); //пустой параграф-отступ
 		template.getMainDocumentPart().getContent().add(newTbl);
 		template.getMainDocumentPart().getContent().add(factory.createP());
+		
+		return result;
 
 	}
 	

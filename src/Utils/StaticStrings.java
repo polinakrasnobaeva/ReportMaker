@@ -1,7 +1,7 @@
 package Utils;
 
 public class StaticStrings {
-	public static final String bonusString = "БОНУС: наличие позиций сайта по региональным запросам без указания города - показатель высокого качества проводимых мероприятий!";
+	public static final String bonusString = "БОНУС: ПОЗИЦИИ САЙТА ПО ЗАПРОСАМ, НЕ ПРЕДУСМОТРЕННЫМИ ТЕКУЩИМИ УСЛОВИЯМИ ПРОДВИЖЕНИЯ - ПОКАЗАТЕЛЬ ВЫСОКОГО КАЧЕСТВА РАБОТЫ!";
 
 	public static final String singlesString = "Регион продвижения - ";
 	public static final String rostovString = "С добавлением города: Ростов-на-Дону";

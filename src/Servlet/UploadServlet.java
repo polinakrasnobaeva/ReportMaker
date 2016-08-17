@@ -143,8 +143,14 @@ public class UploadServlet extends HttpServlet {
 		Calendar currentC = Calendar.getInstance();
 		if(stats != null && stats.size() > 0){
 			Entry <Long, Float> lastEntry = null;
+			Entry <Long, Float> firstEntry = null;
+			boolean g = true;
 			lastEntry = null;
 			for(Entry<Long, Float> st : stats.entrySet()){
+				if(g){//OMG, vybral format hranenya v MAP na svoyu golovu
+					firstEntry = st;
+					g = false;
+				}
 				lastEntry = st;
 			}
 			Calendar lastC = Calendar.getInstance();
@@ -154,12 +160,15 @@ public class UploadServlet extends HttpServlet {
 					stats.remove(lastEntry.getKey());
 				}
 			}
-
+			if(stats.size() >= 12){
+				stats.remove(firstEntry.getKey());
+			}
 		}else{
 			stats = new LinkedHashMap<>();
 		}
-					
+		
 		stats.put(currentC.getTimeInMillis(), (float)topCount / totalCount * 100);
+	
 		System.out.println(getServletContext().getRealPath("config" + File.separator + "reachers") + File.separator 
 						+ clientSite + ".txt");
 		Reacher.pushStats(

@@ -432,7 +432,7 @@ public class ReportBuilder{
 		}else{
 			int top = 0;
 			if(isSepAddw){
-				top = dw.insertNewTableWithTwoColumns(addWordsToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
+				top = dw.insertNewTableWithTwoColumns(addWordsToPrint, StaticStrings.addWordsString, this.lastCitiesPos, false);
 				dw.insertNewTableWithTwoColumns(addWordsToPrintGoo, StaticStrings.googleString, this.lastCitiesPos, false);
 			}else{
 				top = dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.lastCitiesPos, false);

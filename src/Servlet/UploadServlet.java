@@ -145,7 +145,6 @@ public class UploadServlet extends HttpServlet {
 			Entry <Long, Float> lastEntry = null;
 			Entry <Long, Float> firstEntry = null;
 			boolean g = true;
-			lastEntry = null;
 			for(Entry<Long, Float> st : stats.entrySet()){
 				if(g){//OMG, vybral format hranenya v MAP na svoyu golovu
 					firstEntry = st;

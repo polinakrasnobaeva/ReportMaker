@@ -10,14 +10,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Map.Entry;
 
 
 public class ClientWorker {
 
 	private static ClientWorker instance;
-	private HashMap<String, String> clients;
+	private ArrayList<Entry<String, String>> clients;
 	private File clientFile;
 	
 	public static synchronized ClientWorker getInstance(String path){
@@ -27,14 +29,20 @@ public class ClientWorker {
 		return instance;
 	}
 	
+	private class ClientComparator implements Comparator<Entry<String, String>>{
+		@Override
+		public int compare(Entry<String, String> o1, Entry<String, String> o2) {
+			return o1.getKey().compareTo(o2.getKey());
+		}
+	}
+	
 	private ClientWorker(String path){
 		File clientFile = new File(path);
 		if(!clientFile.exists()){
 			return;
 		}
 		this.clientFile = clientFile;
-		HashMap<String, String> result = new HashMap<String, String>();
-		
+		ArrayList<Entry<String, String>> result = new ArrayList<>();
 		String buf;
 		
 		
@@ -51,7 +59,7 @@ public class ClientWorker {
 			e.printStackTrace();
 		}
 		BufferedReader bReader = new BufferedReader(isr);
-		
+	
 
 		String clSite;
 		String clName;
@@ -61,7 +69,8 @@ public class ClientWorker {
 				i = buf.indexOf('!');
 				clSite = buf.substring(0, i);
 				clName = buf.substring(i+1, buf.length());
-				result.put(clSite, clName);
+				result.add(new AbstractMap.SimpleEntry<String, String>(clSite, clName));
+				//result.put(clSite, clName);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -73,16 +82,17 @@ public class ClientWorker {
 			e.printStackTrace();
 		}
 		
+		result.sort(new ClientComparator());
 		
 		this.clients = result;
 	}
 
-	public HashMap<String, String> getClients(){
+	public ArrayList<Entry<String, String>> getClients(){
 		return this.clients;
 	}
 	
 	public synchronized void addClient(String clName, String clSite){
-		this.clients.put(clName, clSite);
+		this.clients.add(new AbstractMap.SimpleEntry<String, String>(clName, clSite));
 		rewriteClientFile();
 	}
 	
@@ -103,7 +113,7 @@ public class ClientWorker {
 		}
 		BufferedWriter bw = new BufferedWriter(osw);
 		
-		for(Entry<String, String> cl : this.clients.entrySet()){
+		for(Entry<String, String> cl : this.clients){
 			try {
 				bw.write(cl.getKey() + "!" + cl.getValue() + "\n");
 			} catch (IOException e) {

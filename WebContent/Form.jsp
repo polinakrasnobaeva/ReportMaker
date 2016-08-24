@@ -72,7 +72,16 @@ Boolean prices = (request.getParameter("prices") != null );%>
 			String clParameter = (String)request.getParameter("client");
 			out.println("<select class=\"input\" name=\"client\">");
 			out.println("<option disabled selected>Выберете клиента(если есть в списке)</option>");
-			for(Entry<String, String> cl : cw.getClients().entrySet()){
+			for(Entry<String, String> cl : cw.getClients()){
+				out.println("<option value=\"" + cl.getKey() + "\"" +
+						(cl.getKey().equals(clParameter) ? " selected" : "") + ">" 
+						+ cl.getKey() + "</option>");
+				if(cl.getKey().equals(clParameter)){
+					selectedClient = cl;
+				}
+				
+			}
+			for(Entry<String, String> cl : cw.getClients()){
 				out.println("<option value=\"" + cl.getKey() + "\"" +
 						(cl.getKey().equals(clParameter) ? " selected" : "") + ">" 
 						+ cl.getKey() + "</option>");

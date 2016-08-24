@@ -135,7 +135,7 @@ public class UploadServlet extends HttpServlet {
 		}
 		
 		//пушим статы
-		String clientSite = (new String(values.get("clientsite").getBytes(), "cp1251")).replace("http://", "").replace("https://", "").replace("/", "").replace("www.", "");
+		String clientSite = (values.get("clientsite").replace("http://", "").replace("https://", "").replace("/", "").replace("www.", ""));
 		System.out.println("СТРОКА: " + clientSite);
 		
 		Reacher r = new Reacher(getServletContext().getRealPath("config" + File.separator + "reachers"), clientSite);

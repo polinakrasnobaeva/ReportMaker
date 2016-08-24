@@ -92,8 +92,17 @@ public class ClientWorker {
 	}
 	
 	public synchronized void addClient(String clName, String clSite){
-		this.clients.add(new AbstractMap.SimpleEntry<String, String>(clName, clSite));
-		rewriteClientFile();
+		boolean b = true;
+		for(Entry<String, String> e : this.clients){
+			if(e.getKey().equals(clSite)){
+				b = false;
+				break;
+			}
+		}
+		if(b){
+			this.clients.add(new AbstractMap.SimpleEntry<String, String>(clName, clSite));
+			rewriteClientFile();
+		}
 	}
 	
 	private synchronized void rewriteClientFile(){

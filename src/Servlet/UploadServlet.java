@@ -205,7 +205,6 @@ public class UploadServlet extends HttpServlet {
         resultFile.delete();
 
         MainServlet.cw.addClient(values.get("clientsite").replace("http://", "").replace("https://", "").replace("/", "").replace("www.", ""), values.get("clientappeal"));
-		
 	}
 	
 	private String processUploadedFile(FileItem item, String extension) throws Exception {

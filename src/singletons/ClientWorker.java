@@ -82,8 +82,6 @@ public class ClientWorker {
 			e.printStackTrace();
 		}
 		
-		result.sort(new ClientComparator());
-		
 		this.clients = result;
 	}
 
@@ -91,7 +89,7 @@ public class ClientWorker {
 		return this.clients;
 	}
 	
-	public synchronized void addClient(String clName, String clSite){
+	public synchronized void addClient(String clSite, String clName){
 		boolean b = true;
 		for(Entry<String, String> e : this.clients){
 			if(e.getKey().equals(clSite)){
@@ -100,7 +98,7 @@ public class ClientWorker {
 			}
 		}
 		if(b){
-			this.clients.add(new AbstractMap.SimpleEntry<String, String>(clName, clSite));
+			this.clients.add(new AbstractMap.SimpleEntry<String, String>(clSite, clName));
 			rewriteClientFile();
 		}
 	}
@@ -121,6 +119,8 @@ public class ClientWorker {
 			e1.printStackTrace();
 		}
 		BufferedWriter bw = new BufferedWriter(osw);
+		
+		this.clients.sort(new ClientComparator());
 		
 		for(Entry<String, String> cl : this.clients){
 			try {

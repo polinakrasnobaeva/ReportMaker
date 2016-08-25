@@ -23,12 +23,24 @@ Boolean prices = (request.getParameter("prices") != null );%>
 <!DOCTYPE html>
 <html>
 <head>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
 <script type="text/javascript" src="./js/Chart.min.js"></script>
+
 <link href="./css/style.css" rel="stylesheet">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>ReportMaker</title>
+
+<script>
+$(document).ready(function(){
+	$('div#hid2').on('click',function(){
+	$('canvas#reachChart').toggleClass('showpanel');
+	});
+	
+});
+</script>
+
 </head>
 <body>
 
@@ -109,7 +121,7 @@ Boolean prices = (request.getParameter("prices") != null );%>
 		if (r.exists()){
 			LinkedHashMap<Long, Float> stats = r.loadStats();
 			DateFormat df = DateFormat.getInstance();
-			out.println("<canvas id='reachChart' width='800' height='350'></canvas>");
+			out.println("<canvas id='reachChart' width='800' height='280'></canvas><div id='hid2'>Посмотреть процент выхода фраз в ТОП10</div>");
 			%><script>
 				var ctx = document.getElementById("reachChart");
 				var myChart = new Chart(ctx, {
@@ -121,13 +133,15 @@ Boolean prices = (request.getParameter("prices") != null );%>
 				     				}
 				                 %>],
 				        datasets: [{
-				            label: 'Проценты по выходу фраз',
+				            label: 'Динамика выхода фраз, %',
+							borderWidth: 1,
+							backgroundColor:  'rgba(255,99,132,0.4)',
+							borderColor:  'rgba(255,99,132,0.8)',
 				            data: [<%
 				        			for(Entry<Long, Float> ent : stats.entrySet()){
 				        				out.print("\"" + ent.getValue() + "\"" + ",");
 				     				}
-				                 %>],
-				            borderWidth: 1
+				                 %>]
 				        }]
 				    },
 				    options: {

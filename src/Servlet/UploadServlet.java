@@ -101,6 +101,7 @@ public class UploadServlet extends HttpServlet {
 			docExamplePath = getServletContext().getRealPath("config" + File.separator + "EXAMPLE.docx");
 			logic.ReportBuilder tableBuilder = new logic.ReportBuilder(csvPath, values);
 			WordprocessingMLPackage tableWMLP = tableBuilder.buildReport(docExamplePath).getWMLP();
+			
 			try {
 				ReportAssembler.assebmle(examplePath, tableWMLP, metricaPath, resultFileName, values, getServletContext().getRealPath(File.separator));
 			} catch (Docx4JException e) {

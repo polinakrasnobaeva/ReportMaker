@@ -379,7 +379,7 @@ public class ReportBuilder{
 			if(this.isCitiesBonus){
 				if(isSepOther){
 					this.tablesForBonus.add(new BonusEntry(citiesToPrint, true, StaticStrings.yandexString + StaticStrings.citiesBonusString, this.lastBonusPos));
-					citiesToPrint = Table.buildBestTable(realCitiesGoo, this.lastBonusPos, true, false, this.isBestLineToTop);
+					citiesToPrint = new Table(realCitiesGoo);
 					this.tablesForBonus.add(new BonusEntry(citiesToPrint, true, StaticStrings.googleString + StaticStrings.citiesBonusString, this.lastBonusPos));
 				}else{
 					this.tablesForBonus.add(new BonusEntry(citiesToPrint, false, StaticStrings.citiesBonusString, this.lastBonusPos));
@@ -388,7 +388,7 @@ public class ReportBuilder{
 				int top = 0;
 				if(isSepOther){
 					top = dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
-					citiesToPrint = Table.buildBestTable(realCitiesGoo, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
+					citiesToPrint = new Table(realCitiesGoo);
 					dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.googleString, this.lastCitiesPos, false);
 				}else{
 					top = dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);

@@ -25,8 +25,8 @@ private Pattern separatorPattern;
 		separatorPattern = Pattern.compile("^[0-9]{1,}$"); // сепаратор выглядит либо как куча цифр типа "20000000214124"
 		
 		dataPattern = skipLine(); //скипаем заголовочную строчку и заодно получаем паттерн
-		
 	}
+
 
 	//считывает строку CSV и возвращает уже объект класса Line
 	public Line readLine() {
@@ -64,13 +64,13 @@ private Pattern separatorPattern;
 			}else{
 				System.out.println("ЧС|" + result);
 				System.out.println(m.pattern().toString());
-				System.out.println("Ошибка чтения строки\nСтрока не подходит паттерн");
+				System.out.println("Ошибка чтения строки\nСтрока не продходит паттерн");
 				return null;
 			}
 			
 			
 		} catch (IOException e) {
-			System.out.println("ПОГАНАЯ СТРОКА||" + result);
+			System.out.println("ПОГАНАЯ СТРОКА: " + result);
 			try {
 				bReader.close();
 			} catch (IOException e1) {

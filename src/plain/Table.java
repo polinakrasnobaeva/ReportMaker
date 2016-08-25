@@ -5,7 +5,6 @@ public class Table {
 	
 	private ArrayList<Line> lines;
 	
-	
 	public Table(){
 		this.lines = new ArrayList<Line>();
 	}
@@ -20,7 +19,6 @@ public class Table {
 	public void addLine(Line line){
 		this.lines.add(line);
 	}
-	
 	
 	public Line getLine(int num){
 		return this.lines.get(num);
@@ -101,7 +99,6 @@ public class Table {
 		if(isBestLineToTop){
 			result.bestLinetoTop(isMainGoo);
 		}
-		
 		
 		return result;
 	}

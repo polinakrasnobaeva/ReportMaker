@@ -77,8 +77,7 @@ public class ReportBuilder{
 		
 		this.promoRegion = values.get("promoRegion");
 	}
-	
-	
+		
 	public DOCXworker buildReport(String docExamplePath){
 
 		csvReader = new CSVReader(this.sourceFileName);
@@ -99,7 +98,6 @@ public class ReportBuilder{
 		
 		csvReader.close();
 
-		
 		//—ќ’–јЌя≈ћ DOCX
 		dw.removeTemplateTable();
 
@@ -107,11 +105,6 @@ public class ReportBuilder{
 		
 		return dw;
 	}
-	
-	
-	/**
-	 * ƒ≈Ћј“№ ЅќЌ”—
-	 */
 
 	private void doSingles(boolean isNeed){
 		if(!isNeed)
@@ -131,11 +124,9 @@ public class ReportBuilder{
 			}
 		}
 		
-		
 		ArrayList<Table> singles = new ArrayList<Table>(); 
 		singles.add(singleForEtalon);
 		
-
 		if(this.isSinglesBonus){
 			Table single = Table.buildBestTable(singles, this.lastBonusPos, false, this.leaveEmpty, this.isBestLineToTop);//лень переписывать метод под одну таблицу, поэтому выше делаем эррейлист на одну таблицу :D
 			
@@ -154,7 +145,9 @@ public class ReportBuilder{
 			if(isSepSingles){
 				top = dw.insertNewTableWithTwoColumns(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
 				single = Table.buildBestTable(singles, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
-				dw.insertNewTableWithTwoColumns(single, StaticStrings.googleString, this.lastCitiesPos, false);
+				if(single.getSize() > 0){
+					dw.insertNewTableWithTwoColumns(single, StaticStrings.googleString, this.lastCitiesPos, false);
+				}
 			}else{
 				top = dw.insertNewTable(single, StaticStrings.singlesString + this.promoRegion, this.lastCitiesPos, false);
 			}
@@ -231,7 +224,9 @@ public class ReportBuilder{
 			if(isSepRostov){
 				top = dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
 				rostovTABLE = Table.buildBestTable(rostovTables, this.lastCitiesPos, true, this.leaveEmpty, this.isBestLineToTop);
-				dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.googleString, this.lastCitiesPos, false);
+				if(rostovTABLE.getSize() > 0){
+					dw.insertNewTableWithTwoColumns(rostovTABLE, StaticStrings.googleString, this.lastCitiesPos, false);
+				}
 			}else{
 				top = dw.insertNewTable(rostovTABLE, StaticStrings.rostovString, this.lastCitiesPos, false);
 			}
@@ -241,17 +236,6 @@ public class ReportBuilder{
 		}
 				
 	}
-	
-	
-	/**
-	 * //ƒ≈Ћј“№ √ќ–ќƒј + доп. слова
-
-	 * —Ќј„јЋј —ќЅ–ј“№ ”∆≈ ¬—≈ “јЅЋ»÷џ, а потом брать по две и сравнивать их доп.слова. 
-	 * например, у первой таблицы доп слово "xyz...", у второй "в xyz...e" где e - либо пустое, если город не склон€етс€ в предложном падеже
-	 * то берем у первой первые три символа(города даже при склонении оставл€ют же 3 символа?))
-	 * и дл€ второй провер€ем равенство "[в|во] xyz...]
-	 * если совпали - это все еще идут таблицы с городами, нет - начались доп. слова, запускаем отдельный метод doAddWords
-	 */
 	
 	private void doCities(boolean isNeed){
 		if(!isNeed)
@@ -327,7 +311,6 @@ public class ReportBuilder{
 					m2 = p2.matcher(city1add.substring(0, 5));
 				}
 				
-				
 				if(m1.matches() | m2.matches()){ //если один из регэкспов совпал, значит, окончани€ - города, у одного в именит., у другого в предложном падеже с предлогом в|во
 					ArrayList<Table> oneCityTable = new ArrayList<>();
 					oneCityTable.add(city1);
@@ -389,7 +372,10 @@ public class ReportBuilder{
 				if(isSepOther){
 					top = dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
 					citiesToPrint = new Table(realCitiesGoo);
-					dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.googleString, this.lastCitiesPos, false);
+					if(citiesToPrint.getSize() > 0){
+						dw.insertNewTableWithTwoColumns(citiesToPrint, StaticStrings.googleString, this.lastCitiesPos, false);
+					}
+					
 				}else{
 					top = dw.insertNewTable(citiesToPrint, StaticStrings.citiesString, this.lastCitiesPos, false);
 				}
@@ -433,7 +419,10 @@ public class ReportBuilder{
 			int top = 0;
 			if(isSepAddw){
 				top = dw.insertNewTableWithTwoColumns(addWordsToPrint, StaticStrings.addWordsString, this.lastCitiesPos, false);
-				dw.insertNewTableWithTwoColumns(addWordsToPrintGoo, StaticStrings.googleString, this.lastCitiesPos, false);
+				if(addWordsToPrintGoo.getSize() > 0){
+					dw.insertNewTableWithTwoColumns(addWordsToPrintGoo, StaticStrings.googleString, this.lastCitiesPos, false);
+				}
+				
 			}else{
 				top = dw.insertNewTable(addWordsToPrint, StaticStrings.addWordsString, this.lastCitiesPos, false);
 			}
@@ -441,7 +430,6 @@ public class ReportBuilder{
 		}
 
 	}
-	
 	
 	private void checkEOF(){ // метод провер€ет, не закончилс€ ли файл (файл законч»лс€, когда CSVReader вместо очередной строчки возвращает null
 		if(currentLine == null)

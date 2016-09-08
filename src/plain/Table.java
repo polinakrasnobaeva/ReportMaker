@@ -21,7 +21,15 @@ public class Table {
 	}
 	
 	public Line getLine(int num){
-		return this.lines.get(num);
+		Line l = null;
+		try{
+			l = lines.get(num);
+		}catch(IndexOutOfBoundsException e){
+			for(Line li : this.lines){
+				System.out.println(li.getString());
+			}
+		}
+		return l;
 	}
 	
 	public int getSize(){

@@ -13,6 +13,7 @@ private BufferedReader bReader;
 private Pattern dataPattern;
 private Matcher m;
 private Pattern separatorPattern;
+public int lineCount = 0;
 	
 	public CSVReader(String readFileName) {
 		try {
@@ -33,11 +34,11 @@ private Pattern separatorPattern;
 		String result= "";
 		try {
 			result = bReader.readLine();
-
+			
 			if(result == null){
 				return null;
 			}
-			
+			lineCount++;
 			
 			String string;
 			int ya;
@@ -150,7 +151,7 @@ private Pattern separatorPattern;
 				}else{
 					return Pattern.compile("^(.*?)\t(.*?)\t(.*?)(:?\t.*$|$)");
 				}
-			}	
+			}
 		}
 		//ну тут уже смиренно ловим нуллпоинтерэксепшен
 		return null;
